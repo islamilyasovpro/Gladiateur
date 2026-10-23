@@ -457,3 +457,11 @@ input[type=text]{width:100%;min-height:48px;font:inherit;font-size:18px;padding:
 .seg.four{grid-template-columns:repeat(4,1fr)}.seg.four button{font-size:12px;padding:8px 2px;letter-spacing:.02em}
 .herohead{display:flex;flex-direction:column;gap:2px;padding:2px 2px 8px}.herohead b{font-size:15px;font-family:var(--display)}.herohead small{opacity:.75;display:block}
 .mal{color:#e8806a}.efx.mal b{color:#e8806a}
+
+/* illustrations peintes (assets/) : remplacent le décor vectoriel quand elles existent */
+.wall.paint{position:absolute;left:0;top:0;width:100%;height:100%;background-size:cover;background-position:50% 78%}
+.wall.paint::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 15% 45%,rgba(255,140,50,.22),transparent 40%),radial-gradient(ellipse at 85% 45%,rgba(255,140,50,.22),transparent 40%);mix-blend-mode:screen;animation:pulse .6s ease-in-out infinite alternate}
+.stage.lv2 .wall.paint{filter:saturate(1.1) brightness(1.06)}
+.stage.lv3 .wall.paint{filter:saturate(1.2) brightness(1.12)}
+.evart{height:160px;margin:-16px -16px 2px;border-radius:4px 4px 0 0;background-size:cover;background-position:center;-webkit-mask-image:linear-gradient(#000 70%,transparent);mask-image:linear-gradient(#000 70%,transparent)}
+@media (prefers-reduced-motion:reduce){.wall.paint::before{animation:none}}

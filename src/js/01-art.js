@@ -4,11 +4,29 @@ const INK = '#1a0c06', IVORY = '#ecdcbc', STEEL = '#8f959c', BRONZE = '#b2813a',
 const SKINS = ['#e39a62', '#cb6a33', '#a84f22', '#7e3718'];
 const HAIRC = ['#1c0e07', '#4f2c15', '#caa14a', '#0c0c10'];
 
-const limb = (pts, ws, fill) => {
-  const seg = (w, col) => pts.slice(0, -1).map((p, i) => `<path d="M${p[0]} ${p[1]}L${pts[i + 1][0]} ${pts[i + 1][1]}" stroke="${col}" stroke-width="${ws[i] + (col === INK ? 3 : 0)}" stroke-linecap="round" fill="none"/>`).join('');
-  return seg(0, INK) + seg(0, fill);
+/* volume : la lumière vient d'en haut à gauche (face au personnage), l'ombre tombe en bas à droite */
+const mix = (hex, to, t) => {
+  const a = parseInt(hex.slice(1), 16), b = parseInt(to.slice(1), 16);
+  const c = sft => Math.round(((a >> sft) & 255) * (1 - t) + ((b >> sft) & 255) * t);
+  return '#' + ((1 << 24) | (c(16) << 16) | (c(8) << 8) | c(0)).toString(16).slice(1);
 };
-const sh = (d, fill, sw) => `<path d="${d}" fill="${fill}" stroke="${INK}" stroke-width="${sw || 1.6}" stroke-linejoin="round"/>`;
+/* un membre musclé : épais à l'attache, ventre du muscle au tiers, fin à l'articulation */
+const f1 = v => Math.round(v * 10) / 10;
+function taper(p0, p1, w0, w1) {
+  const dx = p1[0] - p0[0], dy = p1[1] - p0[1], L = Math.hypot(dx, dy) || 1, nx = -dy / L, ny = dx / L;
+  const a = w0 / 2, c = w1 / 2, b = w0 * 0.6, mx = p0[0] + dx * 0.36, my = p0[1] + dy * 0.36;
+  const P = (x, y, k) => `${f1(x + nx * k)} ${f1(y + ny * k)}`;
+  return `M${P(p0[0], p0[1], a)}Q${P(mx, my, b * 1.25)} ${P(p1[0], p1[1], c)}A${f1(c)} ${f1(c)} 0 0 0 ${P(p1[0], p1[1], -c)}Q${P(mx, my, -b * 1.12)} ${P(p0[0], p0[1], -a)}A${f1(a)} ${f1(a)} 0 0 0 ${P(p0[0], p0[1], a)}Z`;
+}
+const limb = (pts, ws, fill) => {
+  const solid = /^#[0-9a-f]{6}$/i.test(fill);
+  const segs = pts.slice(0, -1).map((p, i) => taper(p, pts[i + 1], ws[i], ws[i + 1] != null ? ws[i + 1] * 0.95 : ws[i] * 0.7));
+  const line = (col, k, dx, dy, op) => pts.slice(0, -1).map((p, i) => `<path d="M${f1(p[0] + dx * ws[i])} ${f1(p[1] + dy * ws[i])}L${f1(pts[i + 1][0] + dx * ws[i])} ${f1(pts[i + 1][1] + dy * ws[i])}" stroke="${col}" stroke-width="${f1(ws[i] * k)}" stroke-linecap="round" fill="none" opacity="${op}"/>`).join('');
+  return segs.map(d => `<path d="${d}" fill="${INK}" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/>`).join('')
+    + segs.map(d => `<path d="${d}" fill="${fill}"/>`).join('')
+    + (solid ? line(mix(fill, '#1a0a04', 0.5), 0.3, 0.24, 0.2, 0.5) + line(mix(fill, '#fff4e0', 0.42), 0.24, -0.16, -0.2, 0.55) : '');
+};
+const sh = (d, fill, sw) => `<path d="${d}" fill="${fill}" stroke="${INK}" stroke-width="${sw || 1.4}" stroke-linejoin="round"/>` + (fill[0] === '#' ? `<path d="${d}" fill="url(#vol)"/>` : '');
 const ln = (d, c, w, op) => `<path d="${d}" fill="none" stroke="${c || INK}" stroke-width="${w || 1.2}" stroke-linecap="round" opacity="${op || 0.75}"/>`;
 
 function weaponG(i) {
@@ -48,7 +66,7 @@ function figure(o) {
   const rank = o.rank || 0, ar = o.armor || 0, wp = o.weapon == null ? 0 : o.weapon, sc = o.scars || 0;
   const pc = pcOf(o), SH = STY[pc.h], SC = STY[pc.c], SB = STY[pc.b], SL = STY[pc.l], SS = STY[pc.s];
   let s = '';
-  s += `<ellipse cx="108" cy="278" rx="48" ry="6" fill="rgba(0,0,0,.55)"/>`;
+  s += `<ellipse cx="108" cy="278" rx="58" ry="9" fill="url(#gshadow)"/>`;
   s += `<g class="root">`;
   if (rank >= 3) s += `<g class="cape">${sh('M98 86 C70 108 64 168 70 222 L96 206 L104 124Z', rank >= 5 ? '#9c2a22' : '#6e2019', 1.6)}${ln('M92 110 C84 150 84 180 86 208', INK, 1.2, 0.5)}</g>`;
   /* jambes */
@@ -252,7 +270,9 @@ const DEFS = `<svg width="0" height="0" style="position:absolute" aria-hidden="t
   <linearGradient id="arenaSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0c0605"/><stop offset=".55" stop-color="#2a0f08"/><stop offset="1" stop-color="#4a1a0a"/></linearGradient>
   <linearGradient id="yardSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#07080e"/><stop offset=".6" stop-color="#181018"/><stop offset="1" stop-color="#2b1710"/></linearGradient>
   <radialGradient id="torchGlow"><stop offset="0" stop-color="#ff9a3c" stop-opacity=".55"/><stop offset="1" stop-color="#ff7a1c" stop-opacity="0"/></radialGradient>
-  <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <radialGradient id="vol" cx=".34" cy=".26" r=".85"><stop offset="0" stop-color="#fff6e6" stop-opacity=".34"/><stop offset=".4" stop-color="#fff6e6" stop-opacity="0"/><stop offset=".7" stop-color="#140703" stop-opacity=".1"/><stop offset="1" stop-color="#140703" stop-opacity=".5"/></radialGradient>
+  <radialGradient id="gshadow"><stop offset="0" stop-color="#000" stop-opacity=".7"/><stop offset=".6" stop-color="#000" stop-opacity=".35"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+  <filter id="glow"x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 </defs></svg>`;
 
 return { SKINS, HAIRC, STY, pieceIcon, figure, head, weaponIcon, armorIcon, mvIcon, navIcon, coin, sound, MEANDER, arenaWall, yardWall, pyramid, DEFS };

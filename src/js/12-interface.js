@@ -417,7 +417,7 @@ function stageForTab() {
     const cls = S.occ && !G.occReady(S) ? (S.occ.kind === 'train' ? 'train' : S.occ.kind === 'work' ? 'work' : '') : '';
     return stageHTML('yard', { hero: lk, heroPos: 'M', heroCls: cls });
   }
-  return stageHTML('yard', { hero: lk, heroPos: 'M' });
+  return stageHTML('yard', { hero: lk, heroPos: 'M', paint: [{ boutique: 'shop', rang: 'rank', hero: 'hero' }[tab]] });
 }
 function renderGame() {
   const body = { ludus, arene: arena, rang: board, boutique: shop, hero }[tab]();

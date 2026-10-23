@@ -25,7 +25,7 @@ function showPop(kind, o) {
   ui.pop = { kind, id: e.id };
   const t = isS ? e.t(S) : e.t, x = isS ? e.x(S) : e.x;
   SFX.event();
-  layer(`<div class="sheet box pop"><div class="evic">${evIcon(e.ic)}</div><div class="cap">${isS ? 'Au ludus · ton histoire' : 'Au ludus · imprévu'}</div><h2>${esc(t)}</h2>${x.map(p => `<p>${esc(p)}</p>`).join('')}<div class="chs">${e.ch.map((c, i) => {
+  layer(`<div class="sheet box pop">${paint('ev-' + e.ic) ? `<div class="evart p-ev-${e.ic}"></div>` : `<div class="evic">${evIcon(e.ic)}</div>`}<div class="cap">${isS ? 'Au ludus · ton histoire' : 'Au ludus · imprévu'}</div><h2>${esc(t)}</h2>${x.map(p => `<p>${esc(p)}</p>`).join('')}<div class="chs">${e.ch.map((c, i) => {
     const lab = isS ? c.l(S) : c.l, poor = c.cost && S.gold < c.cost;
     return `<button class="btn ${i === 0 ? 'main' : 'ghost'}" data-act="pop:${i}" ${poor ? 'disabled' : ''}><b>${esc(lab)}</b>${c.cost ? `<small class="num">${c.cost} sesterces${poor ? ' · tu n’as pas assez' : ''}</small>` : ''}</button>`;
   }).join('')}</div></div>`);
