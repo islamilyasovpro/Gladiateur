@@ -17,7 +17,7 @@ function fightView(f, opp, myLook) {
   document.querySelectorAll('#root [id]').forEach(e => e.removeAttribute('id')); /* évite les doublons d’identifiants avec la scène du dessous */
   const bar = (id, cls, v, t) => `<div class="bar ${cls}"><i id="${id}" style="width:${v}%"></i><b class="num" id="${id}t">${t}</b></div>`;
   $('#layer').innerHTML = `<div class="battle"><div class="in" id="bin">
-    <div class="stage lv1 ${f.rule ? 'r-' + f.rule : ''}" id="stage">${paint('arena') ? '<div class="wall paint p-arena"></div>' : `${ART.arenaWall()}<div class="floor arena">${ART.MEANDER(9, '#a97f1f')}</div>`}
+    <div class="stage lv1 ${f.rule ? 'r-' + f.rule : ''}" id="stage">${painted('arena') ? '<div class="wall paint p-arena"></div>' : `${ART.arenaWall()}<div class="floor arena">${ART.MEANDER(9, '#a97f1f')}</div>`}
       <div class="fgt L" id="fP">${ART.figure(Object.assign({}, myLook, { cls: '' }))}</div><div class="fgt R" id="fE">${ART.figure(Object.assign({}, opp.look, { cls: '' }))}</div>
       <div class="bhud"><div><div class="nm">${esc(S.name)}</div>${bar('ph', 'hp', pct(f.P.hp, f.P.maxHp), f.P.hp + '/' + f.P.maxHp)}${f.P.armMax ? bar('pm', 'arm', 100, f.P.arm + '/' + f.P.armMax) : ''}</div><div><div class="nm r">${esc(opp.name)}</div>${bar('eh', 'hp', 100, f.E.maxHp + '/' + f.E.maxHp)}${f.E.armMax ? bar('em', 'arm', 100, f.E.arm + '/' + f.E.armMax) : ''}${f.E.pots.length ? `<div class="epots" id="ep">${f.E.pots.map(() => `<span class="ep on">${evIcon('potion')}</span>`).join('')}</div>` : ''}</div></div>
       <div class="favrow"><span class="cap">Faveur de la foule</span>${bar('fv', 'fav', f.fav, Math.round(f.fav))}</div>
